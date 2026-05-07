@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MACET Patna — Feedback Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --dark: #0b0e14;
+    --dark2: #111520;
+    --dark3: #181d2a;
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --text: #e8eaf0;
+    --text-muted: #8a91a8;
+    --teal: #3ecfb2;
+    --teal-dim: rgba(62,207,178,0.12);
+    --red: #ff6b6b;
+    --success: #3ecfb2;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    min-height: 100vh;
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ── BACKGROUND ── */
+  .bg-mesh {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 0%, rgba(201,168,76,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 100%, rgba(62,207,178,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(17,21,32,0.9) 0%, transparent 100%);
+  }
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.035;
+    background-image: linear-gradient(var(--text) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--text) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .orb {
+    position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0;
+    animation: orbFloat 12s ease-in-out infinite;
+  }
+  .orb1 { width: 400px; height: 400px; background: rgba(201,168,76,0.06); top: -100px; left: -100px; }
+  .orb2 { width: 350px; height: 350px; background: rgba(62,207,178,0.05); bottom: -80px; right: -80px; animation-delay: -6s; }
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(30px, 20px) scale(1.05); }
+  }
+
+  /* ── LAYOUT ── */
+  .container {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center; margin-bottom: 40px; animation: fadeDown 0.7s ease both;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 100px; padding: 6px 18px; font-size: 12px;
+    color: var(--gold-light); letter-spacing: 0.12em; text-transform: uppercase;
+    font-weight: 500; margin-bottom: 20px;
+  }
+  .badge::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); display: block;
+    box-shadow: 0 0 8px var(--gold); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .logo-ring {
+    width: 180px; height: 180px; border-radius: 50%; margin: 0 auto 20px;
+    border: 2px solid var(--gold-dim);
+    background: var(--glass);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 40px rgba(201,168,76,0.1);
+  }
+  .logo-ring::before {
+    content: ''; position: absolute; inset: -2px;
+    border-radius: 50%; padding: 2px;
+    background: conic-gradient(from 0deg, var(--gold), transparent, var(--gold));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: spin 6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .logo-inner {
+    font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif; font-size: clamp(26px, 5vw, 42px);
+    font-weight: 700; line-height: 1.15; margin-bottom: 10px;
+    background: linear-gradient(135deg, #fff 0%, var(--gold-light) 60%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .subtitle {
+    font-size: 14px; color: var(--text-muted); letter-spacing: 0.04em;
+    font-weight: 400; max-width: 420px; margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── CARD ── */
+  .card {
+    width: 100%; max-width: 620px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 44px 48px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    animation: fadeUp 0.8s ease both 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+    opacity: 0.4;
+  }
+
+  /* ── SECTIONS ── */
+  .section-label {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 24px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--glass-border);
+  }
+  .section-label .icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.2);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .section-label h2 {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gold-light); font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── FIELDS ── */
+  .field-group { margin-bottom: 22px; }
+  .field-group label {
+    display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
+  }
+  .field-group label span { color: var(--gold); margin-left: 2px; }
+
+  .input-wrap { position: relative; }
+  .input-wrap .icon-prefix {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; pointer-events: none; opacity: 0.5; transition: opacity 0.2s;
+  }
+  .input-wrap input,
+  .input-wrap select,
+  .input-wrap textarea {
+    width: 100%; height: 52px; padding: 0 18px 0 48px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 400;
+    outline: none; transition: all 0.25s ease;
+    -webkit-appearance: none; appearance: none;
+  }
+  .input-wrap select { cursor: pointer; }
+  .input-wrap select option { background: var(--dark3); color: var(--text); }
+  .input-wrap textarea {
+    height: auto; padding: 16px 18px 16px 48px; resize: none; line-height: 1.6;
+  }
+  .input-wrap input::placeholder,
+  .input-wrap textarea::placeholder { color: rgba(138,145,168,0.5); }
+
+  .input-wrap input:focus,
+  .input-wrap select:focus,
+  .input-wrap textarea:focus {
+    border-color: rgba(201,168,76,0.5);
+    background: rgba(201,168,76,0.04);
+    box-shadow: 0 0 0 4px rgba(201,168,76,0.08);
+  }
+  .input-wrap:focus-within .icon-prefix { opacity: 1; }
+
+  /* select arrow */
+  .select-arrow {
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--text-muted); font-size: 12px;
+  }
+
+  /* ── RATING ── */
+  .rating-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rating-btn {
+    flex: 1; min-width: 44px; height: 44px;
+    border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.03); color: var(--text-muted);
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease; font-family: 'DM Sans', sans-serif;
+  }
+  .rating-btn:hover { border-color: rgba(201,168,76,0.4); color: var(--gold-light); background: var(--gold-dim); }
+  .rating-btn.active {
+    border-color: var(--gold); color: var(--gold-light);
+    background: var(--gold-dim);
+    box-shadow: 0 0 16px rgba(201,168,76,0.15);
+  }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--glass-border); margin: 28px 0; }
+
+  /* ── SUBMIT ── */
+  .submit-btn {
+    width: 100%; height: 56px; border: none; border-radius: var(--radius-sm);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 16px;
+    font-weight: 600; letter-spacing: 0.04em;
+    background: linear-gradient(135deg, var(--gold) 0%, #b8892e 100%);
+    color: #0b0e14; position: relative; overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.25s ease;
+    box-shadow: 0 8px 32px rgba(201,168,76,0.25);
+  }
+  .submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(201,168,76,0.35);
+  }
+  .submit-btn:active:not(:disabled) { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .submit-btn .shimmer {
+    position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+    transform: translateX(-100%); animation: shimmer 2.5s infinite;
+  }
+  @keyframes shimmer { to { transform: translateX(200%); } }
+
+  /* ── LOADER ── */
+  .loader { display: none; align-items: center; justify-content: center; gap: 6px; }
+  .loader.show { display: flex; }
+  .loader span {
+    width: 6px; height: 6px; border-radius: 50%; background: #0b0e14;
+    animation: dotBounce 1.2s infinite;
+  }
+  .loader span:nth-child(2) { animation-delay: 0.2s; }
+  .loader span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotBounce { 0%,80%,100%{transform:scale(0.6)} 40%{transform:scale(1)} }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--dark3); border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 14px 22px; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px; z-index: 999;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap; box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: rgba(62,207,178,0.3); color: var(--success); }
+  .toast.error { border-color: rgba(255,107,107,0.3); color: var(--red); }
+
+  /* ── ERRORS ── */
+  .err-msg { font-size: 11px; color: var(--red); margin-top: 6px; display: none; }
+  .err-msg.show { display: block; }
+  .input-wrap.invalid input,
+  .input-wrap.invalid select,
+  .input-wrap.invalid textarea {
+    border-color: rgba(255,107,107,0.5);
+    box-shadow: 0 0 0 4px rgba(255,107,107,0.06);
+  }
+
+  /* ── SUCCESS STATE ── */
+  .success-screen {
+    display: none; text-align: center; padding: 20px 0;
+    animation: fadeUp 0.5s ease;
+  }
+  .success-screen.show { display: block; }
+  .success-icon {
+    width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 24px;
+    background: rgba(62,207,178,0.12); border: 2px solid rgba(62,207,178,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 0 40px rgba(62,207,178,0.15);
+  }
+  .success-screen h2 {
+    font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700;
+    color: var(--teal); margin-bottom: 10px;
+  }
+  .success-screen p { color: var(--text-muted); font-size: 14px; line-height: 1.7; }
+  .reset-btn {
+    margin-top: 24px; padding: 12px 28px; border: 1px solid var(--gold-dim);
+    border-radius: var(--radius-sm); background: transparent; color: var(--gold-light);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .reset-btn:hover { background: var(--gold-dim); }
+
+  /* ── FOOTER ── */
+  .footer { margin-top: 32px; text-align: center; color: var(--text-muted); font-size: 12px; animation: fadeUp 1s ease both 0.4s; }
+  .footer strong { color: var(--gold-light); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .card { padding: 32px 22px; border-radius: 20px; }
+    .grid-2 { grid-template-columns: 1fr; gap: 0; }
+    h1 { font-size: 26px; }
+    .rating-btn { min-width: 36px; height: 38px; font-size: 13px; }
+    .toast { white-space: normal; text-align: center; width: 88%; }
+  }
+  @media (max-width: 380px) {
+    .card { padding: 24px 16px; }
+    .container { padding: 24px 12px 48px; }
+    .logo-ring { width: 64px; height: 64px; }
+    .logo-inner { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="badge">Official Portal · 2026</div>
+    <div class="logo-ring"><div class="logo-inner"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSf-xL2NH6UuLmmiY_HEBD6bFKd16v3GPHiw&s" style="object-fit:cover; width: 100%; height: 100%;" alt="Macet"></div></div>
+    <h1>MACET Patna<br/>Feedback Portal</h1>
+    <p class="subtitle">Share your experience and help us improve. Your feedback matters to us.</p>
+  </div>
+
+  <!-- CARD -->
+  <div class="card">
+
+    <!-- FORM -->
+    <form id="feedbackForm" novalidate>
+
+      <!-- PERSONAL INFO -->
+      <div class="section-label">
+        <div class="icon">👤</div>
+        <h2>Personal Information</h2>
+      </div>
+
+      <!-- Name -->
+      <div class="field-group">
+        <label>Full Name <span>*</span></label>
+        <div class="input-wrap" id="wrap-name">
+          <span class="icon-prefix">✦</span>
+          <input type="text" id="inp-name" placeholder="Enter your full name" autocomplete="name" />
+        </div>
+        <div class="err-msg" id="err-name">Please enter your full name.</div>
+      </div>
+
+      <!-- Roll No + Mobile -->
+      <div class="grid-2">
+        <div class="field-group">
+          <label>Roll Number <span>*</span></label>
+          <div class="input-wrap" id="wrap-roll">
+            <span class="icon-prefix">🎓</span>
+            <input type="text" id="inp-roll" placeholder="e.g. 022/24" />
+          </div>
+          <div class="err-msg" id="err-roll">Enter a college roll number.</div>
+        </div>
+
+        <div class="field-group">
+          <label>Mobile <span>*</span></label>
+          <div class="input-wrap" id="wrap-mob">
+            <span class="icon-prefix">📱</span>
+            <input type="tel" id="inp-mob" placeholder="+91 9876543210" maxlength="13" />
+          </div>
+          <div class="err-msg" id="err-mob">Enter a valid 10-digit number.</div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ACADEMIC INFO -->
+      <div class="section-label">
+        <div class="icon">🏛</div>
+        <h2>Academic Details</h2>
+      </div>
+
+      <!-- Branch -->
+      <div class="field-group">
+        <label>Branch <span>*</span></label>
+        <div class="input-wrap" id="wrap-branch" style="position:relative">
+          <span class="icon-prefix">📚</span>
+          <select id="inp-branch">
+            <option value="">— Select your branch —</option>
+            <option value="Computer Science & Engineering (CSE)">Computer Science & Engineering (CSE)</option>
+            <option value="CSE (Data Science)">CSE ( Data Science )</option>
+            <option value="CSE (AI & ML)">CSE ( AI & ML )</option>
+            <option value="(EEE)">EEE</option>
+            <option value="Mechanical Engineering (ME)">Mechanical Engineering (ME)</option>
+            <option value="Civil Engineering (CE)">Civil Engineering (CE)</option>
+            <option value="Diploma in Computer Science & Engineering">Diploma CSE</option>
+            <option value="Diploma in Civil Engineering">Diploma Civil</option>
+            <option value="Diploma in Electrical Engineering">Diploma Electrical</option>
+            <option value="Diploma in Mechanical Engineering">Diploma Mechanical</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+        <div class="err-msg" id="err-branch">Please select your branch.</div>
+      </div>
+
+      <!-- College -->
+      <div class="field-group">
+        <label>College Name <span>*</span></label>
+        <div class="input-wrap" id="wrap-college">
+          <span class="icon-prefix">🏫</span>
+          <input type="text" id="inp-college" placeholder="Maulana Azad College of Engineering & Technology Patna" value="Maulana Azad College of Engineering & Technology, Patna" />
+        </div>
+        <div class="err-msg" id="err-college">Please enter your college name.</div>
+      </div>
+
+      <!-- Year -->
+      <div class="field-group">
+        <label>Year of Study</label>
+        <div class="input-wrap" style="position:relative">
+          <span class="icon-prefix">📅</span>
+          <select id="inp-year">
+            <option value="">— Select year —</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- FEEDBACK -->
+      <div class="section-label">
+        <div class="icon">💬</div>
+        <h2>Your Feedback</h2>
+      </div>
+
+      <!-- Rating -->
+      <div class="field-group">
+        <label>Overall Experience <span>*</span></label>
+        <div class="rating-wrap" id="rating-wrap">
+          <button type="button" class="rating-btn" data-val="1">1<br/><span style="font-size:9px;font-weight:400">Poor</span></button>
+          <button type="button" class="rating-btn" data-val="2">2<br/><span style="font-size:9px;font-weight:400">Fair</span></button>
+          <button type="button" class="rating-btn" data-val="3">3<br/><span style="font-size:9px;font-weight:400">Good</span></button>
+          <button type="button" class="rating-btn" data-val="4">4<br/><span style="font-size:9px;font-weight:400">Great</span></button>
+          <button type="button" class="rating-btn" data-val="5">5<br/><span style="font-size:9px;font-weight:400">Excellent</span></button>
+        </div>
+        <div class="err-msg" id="err-rating">Please select a rating.</div>
+        <input type="hidden" id="inp-rating" />
+      </div>
+
+      <!-- Message -->
+      <div class="field-group">
+        <label>Feedback / Suggestions <span>*</span></label>
+        <div class="input-wrap" id="wrap-msg">
+          <span class="icon-prefix" style="top:18px;transform:none">✍</span>
+          <textarea id="inp-msg" rows="4" placeholder="Share your thoughts, suggestions or concerns..."></textarea>
+        </div>
+        <div class="err-msg" id="err-msg">Please write your feedback.</div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <div class="shimmer"></div>
+        <span id="btn-label">Submit Feedback →</span>
+        <div class="loader" id="loader">
+          <span></span><span></span><span></span>
+        </div>
+      </button>
+
+    </form>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✓</div>
+      <h2>Feedback Received!</h2>
+      <p>Thank you for sharing your feedback.<br/>It has been sent to the MACET Patna team via email.</p>
+      <button class="reset-btn" onclick="resetForm()">Submit Another →</button>
+    </div>
+
+  </div><!-- /card -->
+
+  <div class="footer">
+    &copy; 2026 <strong>@MACET Patna</strong> · Student Feedback Portal · Powered by <strong>@MD KAMRAN.</strong>
+  </div>
+
+</div><!-- /container -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toast-icon"></span>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+  // ══════════════════════════════════════════════
+  //  ⚙️  EMAILJS CONFIG — 
+  // ══════════════════════════════════════════════
+  const EMAILJS_PUBLIC_KEY  = "6tFIMUT8Cy1UJHVmg";   // 👈 
+  const EMAILJS_SERVICE_ID  = "service_dl0rhii";   // 👈 
+  const EMAILJS_TEMPLATE_ID = "template_8qynryi";  // 👈 
+  // ══════════════════════════════════════════════
+
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+  // Rating select
+  let selectedRating = "";
+  document.querySelectorAll(".rating-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".rating-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedRating = btn.dataset.val;
+      document.getElementById("inp-rating").value = selectedRating;
+      hide("err-rating");
+      resetInvalid("rating-wrap");
+    });
+  });
+
+  // Validation helpers
+  function show(id)  { document.getElementById(id).classList.add("show"); }
+  function hide(id)  { document.getElementById(id).classList.remove("show"); }
+  function setInvalid(id) { document.getElementById(id).classList.add("invalid"); }
+  function resetInvalid(id) { document.getElementById(id).classList.remove("invalid"); }
+
+  function validate() {
+    let ok = true;
+    const rules = [
+      { wrap:"wrap-name",    inp:"inp-name",    err:"err-name",    check: v => v.trim().length >= 2 },
+      { wrap:"wrap-roll",    inp:"inp-roll",    err:"err-roll",    check: v => v.trim().length >= 3 },
+      { wrap:"wrap-mob",     inp:"inp-mob",     err:"err-mob",     check: v => /^[6-9]\d{9}$/.test(v.replace(/\D/g,"")) },
+      { wrap:"wrap-branch",  inp:"inp-branch",  err:"err-branch",  check: v => v !== "" },
+      { wrap:"wrap-college", inp:"inp-college", err:"err-college", check: v => v.trim().length >= 3 },
+      { wrap:"wrap-msg",     inp:"inp-msg",     err:"err-msg",     check: v => v.trim().length >= 10 },
+    ];
+    rules.forEach(r => {
+      const val = document.getElementById(r.inp).value;
+      if (!r.check(val)) { setInvalid(r.wrap); show(r.err); ok = false; }
+      else { resetInvalid(r.wrap); hide(r.err); }
+    });
+    if (!selectedRating) { show("err-rating"); ok = false; }
+    else hide("err-rating");
+    return ok;
+  }
+
+  // Live clear errors
+  ["inp-name","inp-roll","inp-mob","inp-branch","inp-college","inp-msg"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("input", () => {
+      const wrapId = "wrap-" + id.replace("inp-","");
+      resetInvalid(wrapId);
+      hide("err-" + id.replace("inp-",""));
+    });
+  });
+
+  // Toast
+  function showToast(type, msg) {
+    const t = document.getElementById("toast");
+    document.getElementById("toast-icon").textContent = type === "success" ? "✓" : "✕";
+    document.getElementById("toast-msg").textContent = msg;
+    t.className = "toast " + type + " show";
+    setTimeout(() => t.classList.remove("show"), 4000);
+  }
+
+  // Submit
+  document.getElementById("feedbackForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const btn = document.getElementById("submitBtn");
+    const label = document.getElementById("btn-label");
+    const loader = document.getElementById("loader");
+
+    btn.disabled = true;
+    label.style.display = "none";
+    loader.classList.add("show");
+
+    const params = {
+    student_name:   document.getElementById("inp-name").value.trim(),
+    roll_number:    decodeURIComponent(document.getElementById("inp-roll").value.trim()),  // ✅ Fix
+    mobile:         decodeURIComponent(document.getElementById("inp-mob").value.trim()),   // ✅ Fix
+    branch:         document.getElementById("inp-branch").value,
+    college:        document.getElementById("inp-college").value.trim(),
+    year:           document.getElementById("inp-year").value || "Not specified",
+    rating:         selectedRating + " / 5",
+    feedback:       decodeURIComponent(document.getElementById("inp-msg").value.trim()),   // ✅ Fix
+    submitted_at:   new Date().toLocaleString("en-IN", { dateStyle:"full", timeStyle:"short" }),
+    };
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+      document.getElementById("feedbackForm").style.display = "none";
+      document.getElementById("successScreen").classList.add("show");
+      showToast("success", "Feedback successfully sent to Gmail!");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Failed to send. Check your EmailJS config.");
+      btn.disabled = false;
+      label.style.display = "";
+      loader.classList.remove("show");
+    }
+  });
+
+  function resetForm() {
+    document.getElementById("feedbackForm").reset();
+    document.getElementById("feedbackForm").style.display = "block";
+    document.getElementById("successScreen").classList.remove("show");
+    document.querySelectorAll(".rating-btn").forEach(b => b.classList.remove("active"));
+    selectedRating = "";
+    document.getElementById("submitBtn").disabled = false;
+    document.getElementById("btn-label").style.display = "";
+    document.getElementById("loader").classList.remove("show");
+    document.getElementById("inp-college").value = "Maulana Azad College of Engineering & Technology, Patna";
+  }
+</script>
+</body>
+</html>
