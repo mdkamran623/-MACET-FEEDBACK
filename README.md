@@ -2,6 +2,8 @@
 
 A clean and modern student feedback portal for **Maulana Azad College of Engineering & Technology, Patna**. Students can submit their feedback which is delivered directly to the college Gmail via EmailJS — no backend required.
 
+https://scontent.fpat11-3.fna.fbcdn.net/v/t39.30808-6/476165148_1065662765574942_4570227068706752640_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=13d280&_nc_ohc=LAGbpGM5UM8Q7kNvwGCzoEp&_nc_oc=AdqGii5jQqqlICdCJT_IoM2iDLRjDwqaFTLkwQk0EVxI3h6COlh_VjvU5P1qJxjY1SfUMBoH7LlGMk0xuPclrfQ-&_nc_zt=23&_nc_ht=scontent.fpat11-3.fna&_nc_gid=YunZTfEMquuOcZeKnLzBjg&_nc_ss=7b289&oh=00_Af509fOqfw5rjAZdHNXwEJk6x4tJk7BeDFw4py9qfE-flQ&oe=6A053945
+
 ---
 
 ## ✨ Features
