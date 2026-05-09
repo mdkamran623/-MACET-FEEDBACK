@@ -2,7 +2,7 @@
 
 A clean and modern student feedback portal for **Maulana Azad College of Engineering & Technology, Patna**. Students can submit their feedback which is delivered directly to the college Gmail via EmailJS — no backend required.
 
-<img width="100%" height="100%" alt="macet-building" src="https://github.com/user-attachments/assets/e736bea6-196d-4445-a8f4-2dd54ba66035" />
+<img width="80%" height="80%" alt="macet-building" src="https://github.com/user-attachments/assets/e736bea6-196d-4445-a8f4-2dd54ba66035" />
 
 
 ---
